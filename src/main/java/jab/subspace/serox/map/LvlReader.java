@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 /** @author Jab */
+@SuppressWarnings("WeakerAccess")
 abstract class LvlReader {
 
   /**
@@ -34,8 +35,9 @@ abstract class LvlReader {
    */
   public static short[][] readMap(File lvl) {
     short[][] tiles = new short[1024][1024];
+    DataInputStream dis = null;
     try {
-      DataInputStream dis = new DataInputStream(new FileInputStream(lvl));
+      dis = new DataInputStream(new FileInputStream(lvl));
       readIn(dis, 2);
       byte[] uint32 = readIn(dis, 4);
       int readInSize = ByteBuffer.wrap(uint32).order(ByteOrder.LITTLE_ENDIAN).getInt();
@@ -53,12 +55,25 @@ abstract class LvlReader {
       System.out.println("Lvl File Could not be read.");
       e.printStackTrace();
     }
+    if (dis != null) {
+      try {
+        dis.close();
+      } catch (Exception e) {
+        // No need to throw.
+      }
+    }
     return tiles;
   }
 
+  /**
+   * Reads a tileset bitmap image from a LVL file.
+   *
+   * @param lvl The LVL file to read.
+   * @return Returns the result tileset image.
+   */
   public static BufferedImage readTileset(File lvl) {
     BufferedImage tileset = null;
-    DataInputStream dis;
+    DataInputStream dis = null;
     try {
       dis = new DataInputStream(new FileInputStream(lvl));
       Image image = BMPLoader.instance.getBMPImage(dis);
@@ -68,6 +83,13 @@ abstract class LvlReader {
       bufImageGraphics.drawImage(image, 0, 0, null);
     } catch (Exception e) {
       e.printStackTrace();
+    }
+    if (dis != null) {
+      try {
+        dis.close();
+      } catch (Exception e) {
+        // No need to throw.
+      }
     }
     return tileset;
   }
